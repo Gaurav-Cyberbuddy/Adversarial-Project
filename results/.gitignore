@@ -66,3 +66,15 @@ __pycache__/
 
 dataset/cifar-10-python.tar.gz
 dataset/cifar-10-batches-py/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+
+*.pth
+*.pt
+
+dataset/cifar-10-python.tar.gz
+dataset/cifar-10-batches-py/
