@@ -1,0 +1,67 @@
+140: Scope stayed narrow: one shallow CNN, CIFAR-10 only, FGSM only. PGD or DeepFool may punch through the same defense. Larger architectures and datasets would need their own reruns before these percentages travel outside the lab.
+141: Conclusion
+142: I trained a CIFAR-10 CNN, attacked it with FGSM at four epsilon values, and retrained with perturbed batches in the loop. Clean accuracy went from 72.54% to 65.15%. At ε = 0.03 attacked accuracy moved from 7.34% to 28.38%.
+143: Plots, matrix counts, and saved image pairs all told the same story: the first checkpoint looked healthy on clean data yet broke under signed gradients; the second checkpoint lost a few clean points but survived the same attack script better. For deployments that accept outside images, building FGSM-aware training into the first model file is safer than bolting defense on after release.
+144: 8. Future Work
+145: FGSM-only defense helped in these runs, but the codebase could be extended in several ways.
+146: Port the same evaluation harness to PGD, DeepFool, and Carlini–Wagner attacks and log how the robust checkpoint responds.
+147: Try certified defenses or robust loss variants and compare training time against plain adversarial batches.
+148: Repeat the pipeline on ResNet or VGG backbones with identical epsilon tables.
+149: Move beyond CIFAR-10 to a higher-resolution set and check whether the accuracy gap widens.
+150: Run domain-specific smoke tests in cybersecurity feeds, medical thumbnails, or autonomy datasets once compute budget allows.
+151: Each extension would reuse the same logging format so new runs stay comparable to the numbers reported here.
+152: Appendix A: Publication Enhancement Roadmap
+153: Reviewer assessment (novelty and contribution). The completed experiments are technically sound and reproducible. The weakest publication aspect is limited research novelty: the pipeline reproduces a well-known FGSM attack and FGSM-based adversarial training on a shallow CNN using CIFAR-10. That combination is valuable as a student implementation report but is below the bar for most IEEE conference papers because the threat model (FGSM-only) matches the defense recipe (FGSM training), the architecture is small, and no cross-attack or cross-defense benchmarking is reported.
+154: The strongest existing assets are the end-to-end codebase, logged epsilon sweeps, confusion matrix, visual adversarial pairs, and the clear accuracy-robustness trade-off already measured at 72.54%, 7.34%, 65.15%, and 28.38%. The extension should build on these assets rather than replace them.
+155: A. Three Realistic Extensions (Ranked)
+156: Extension 1 - FGSM vs PGD robustness benchmarking (recommended). Evaluate baseline and FGSM-trained models under both FGSM and Projected Gradient Descent (PGD) at matched epsilon budgets. Report whether FGSM-trained robustness transfers to a stronger iterative attack.
+157: Publication impact: High - addresses the main limitation named in Section 8 and tests threat-model mismatch (gradient obfuscation / overfitting to weak attacks).
+158: Implementation difficulty: Low-Medium - reuses existing evaluation loop.
+159: Time required: 2-4 days on a laptop GPU/CPU.
+160: Extension 2 - Multi-defense comparison on a fixed PGD evaluation. Keep the same CNN and dataset; compare (a) standard training, (b) FGSM adversarial training already implemented, and (c) PGD adversarial training with identical epochs and optimizer settings.
+161: Publication impact: Medium-High - turns the project into a defense-comparison study.
+162: Implementation difficulty: Medium - requires a second training script.
+163: Time required: 3-5 days including PGD training time.
+164: Extension 3 - Attack transferability analysis. Generate adversarial examples on the baseline model and test whether they fool the robust model (and vice versa) without querying the target model gradients.
+165: Publication impact: Medium - adds a security-relevant black-box angle aligned with Papernot et al.
+166: Implementation difficulty: Low - no new training required initially.
+167: Time required: 1-2 days.
+168: B. Recommended Extension: FGSM vs PGD Benchmarking
+169: Why this option wins: it is the smallest code delta with the largest novelty gain. Reviewers will ask whether FGSM-trained robustness survives PGD; answering that question with measured tables is a genuine contribution. It also reframes the paper from a reproduction exercise into an empirical robustness evaluation study.
+170: B.1 New Files to Create
+171: attacks/attack_utils.py - shared clamping, loss backward, and epsilon loop.
+172: attacks/pgd_attack.py - PGD-Linf generator (k=10 steps, step size alpha = epsilon/4).
+173: evaluation/multi_attack_eval.py - runs FGSM and PGD on both checkpoints.
+174: results/plot_attack_comparison.py - grouped bar/line chart for all runs.
+175: B.2 Code Changes in Existing Files
+176: attacks/fgsm_attack.py - import generate_fgsm() from attack_utils; remove duplicated backward logic.
+177: evaluation/robust_test.py - accept --attack {fgsm,pgd} and --epsilon flags; print CSV-friendly rows for table export.
+178: results/plot_results.py - add Figure 8: FGSM vs PGD accuracy for Standard and Robust CNN across epsilon in {0.01, 0.03, 0.05, 0.10}.
+179: B.3 Additional Tables and Figures (after experiments complete)
+180: TABLE VI - Baseline CNN accuracy under FGSM and PGD (four epsilon rows, two attack columns).
+181: TABLE VII - Robust CNN accuracy under FGSM and PGD (same layout).
+182: TABLE VIII - Robustness gap: (Robust PGD accuracy - Baseline PGD accuracy) per epsilon.
+183: Figure 8. FGSM versus PGD accuracy comparison for both models.
+184: B.4 How the Paper Should Be Updated (no fabricated numbers)
+185: Title - add evaluation scope, e.g., FGSM and PGD Attacks.
+186: Abstract - keep all current FGSM results; add one sentence on PGD evaluation after runs complete.
+187: Methodology - add subsection Projected Gradient Descent (PGD) Attack with k=10, alpha=epsilon/4.
+188: Results - add subsection Cross-Attack Robustness with Tables VI-VIII and Figure 8.
+189: Discussion - interpret FGSM-PGD gap and threat-model mismatch honestly.
+190: Conclusion - broaden claim to evaluated threat model; retain all FGSM conclusions.
+191: C. Step-by-Step Implementation Roadmap
+192: Step 1 - Refactor FGSM into attacks/attack_utils.py; verify FGSM numbers unchanged.
+193: Step 2 - Implement PGD in attacks/pgd_attack.py; unit-test on one image batch.
+194: Step 3 - Run evaluation/multi_attack_eval.py on both checkpoints; save results/attack_benchmark.csv.
+195: Step 4 - Build Tables VI-VIII and Figure 8 from the CSV only.
+196: Step 5 - Update Abstract, Methodology, Results, Discussion, and Conclusion text.
+197: Step 6 - Add Madry PGD citation; keep all five existing references.
+198: Important constraint: do not insert PGD accuracy values into the paper until the scripts finish and the CSV is verified. All existing FGSM tables, figures, and percentages in Sections 1-8 remain unchanged.
+199: 9. References
+200: I. J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and Harnessing Adversarial Examples,” International Conference on Learning Representations (ICLR), 2015.
+201: A. Krizhevsky, “Learning Multiple Layers of Features from Tiny Images,” University of Toronto, Technical Report, 2009.
+202: Y. LeCun, Y. Bengio, and G. Hinton, “Deep Learning,” Nature, vol. 521, no. 7553, pp. 436–444, 2015.
+203: N. Papernot et al., “Practical Black-Box Attacks against Machine Learning,” ACM Asia Conference on Computer and Communications Security, 2017.
+204: A. Madry et al., “Towards Deep Learning Models Resistant to Adversarial Attacks,” International Conference on Learning Representations (ICLR), 2018
+
+TOTAL 205 tables 5

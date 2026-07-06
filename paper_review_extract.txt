@@ -1,0 +1,172 @@
+FILE: pdfff_formatted.docx
+ paras=158 tables=5
+
+[0] A Study of the Dark Side of AI: Adversarial Attacks on Deep Learning Systems and Defense Mechanisms
+[1] Gaurav Sharma , Dr.Sreevani Maddukuri
+[2] Gaurav Sharma (student), INT.Mtech CSE Spec. Cyber Security, VIT Bhopal Dr.Sreevani Maddukuri(supervisor), Dr. Hemraj .S.Lamkuche(reviewer 1),Puspinder Singh Patheja(reviewer 2), School of Computing Science Engineering and Artificial Intelligence, VIT Bhopal
+[3] ABSTRACT
+[4] A custom convolutional network was trained on CIFAR-10 and checked first on clean test images, then under Fast Gradient Sign Method (FGSM) perturbations. Clean evaluation gave 72.54% accuracy. The same weights collapsed once FGSM noise was added at test time.
+[5] Evaluation under FGSM at ε = 0.03 pulled attacked accuracy down to 7.34%. The perturbed frames still looked like the originals when displayed side by side. A second training pass mixed FGSM samples into each batch. That run finished with 65.15% on clean data and 28.38% when the identical ε = 0.03 attack was replayed on the test set.
+[6] Epsilon sweeps, a confusion matrix, and saved image pairs were used to read the gap between the two checkpoints. Testing results revealed that strong clean scores do not, by themselves, signal safe behavior once gradient-based tampering is applied.
+[7] Introduction
+[8] Image classifiers built with convolutional layers are now part of fraud checks, hospital software, and traffic cameras. During implementation I relied on backpropagation: each epoch updates weights using the loss gradient. That same gradient can be read at inference and flipped to craft misleading inputs. The picture may look unchanged, yet the softmax output jumps to another class. These samples are called adversarial examples.
+[9] Model behavior changed when I fed such inputs into the trained CNN. Wrong labels appeared with high confidence even though the RGB arrays looked normal on screen. In cyber security settings that matters because a tampered upload might pass a visual review while still breaking the classifier downstream.
+[10] The work reported here walks through one full pipeline on CIFAR-10. I trained a baseline CNN, logged clean accuracy, ran FGSM at ε values 0.01, 0.03, 0.05, and 0.10, then retrained with on-the-fly perturbations in each mini-batch. Outputs were compared through accuracy tables, epsilon curves, confusion counts, and screenshots of clean versus perturbed frames.
+[11] The primary contributions of this work are as follows:
+[12] Built and trained a custom CNN on CIFAR-10; ran FGSM at four epsilon settings against the baseline checkpoint.
+[13] Retrained the same architecture with adversarial samples generated inside the training loop.
+[14] Compared both checkpoints using numeric metrics and stored visual examples from the test run.
+[15] Recorded what the numbers imply for deploying classifiers where input tampering is plausible.
+[16] Literature Review
+[17] Szegedy et al. and Goodfellow et al. showed an odd split: a network can score well on a held-out set yet flip its label when pixels shift by a tiny bounded amount. The failure tracks how the model partitions pixel space, not a single bug in one layer.
+
+Goodfellow et al. published FGSM as a one-pass attack that follows the sign of the input gradient. I chose it because the code path is short—one forward pass, one backward pass, one signed update. PGD and Carlini–Wagner attacks are stronger, but FGSM still shows up in coursework and baseline papers, so it fit this project scope.
+[18] Madry et al. trained on perturbed batches so the network sees hostile inputs while weights are still moving. Reported runs often gain attacked accuracy at the cost of a few points on clean data. I saw the same pattern in my own logs.
+
+Other AI security threads cover poisoned training sets, stolen weights, membership inference, and synthetic media misuse. Those risks sit at different stages of the pipeline. Here I stayed with image classification on a small CNN, CIFAR-10, and FGSM only, reporting what the implementation actually printed rather than restating textbook theory.
+[19] Methodology
+[20] The pipeline had five coded stages: load CIFAR-10, train the baseline CNN, generate FGSM examples, run adversarial retraining, and score both models with the same test scripts.
+[21] Dataset
+[22] CIFAR-10 was the sole dataset. It ships 60,000 color images at 32×32 pixels across ten object labels. The standard split keeps 50,000 frames for training and 10,000 for testing.
+[23] The ten classes included in the dataset are:
+[24] Airplane
+[25] Automobile
+[26] Bird
+[27] Cat
+[28] Deer
+[29] Dog
+[30] Frog
+[31] Horse
+[32] Ship
+[33] Truck
+[34] Torchvision pulled the files on first run. Each image was cast to a tensor before entering the network.
+[35] Convolutional Neural Network Architecture
+[36] The baseline classifier is a shallow CNN: two convolution blocks, one pool, then two dense layers. Layer sizes were kept small so training finished on a laptop and the attack code stayed easy to trace.
+[37] Layer settings used in code:
+[38] Convolution Layer 1: 3 input channels, 32 output channels, kernel size 3×3.
+[39] Convolution Layer 2: 32 input channels, 64 output channels, kernel size 3×3.
+[40] Max Pooling Layer: Pool size 2×2.
+[41] Fully Connected Layer 1: 4096 input features and 512 output features.
+[42] Fully Connected Layer 2: 512 input features and 10 output classes.
+[43] Adam at learning rate 0.001 minimized cross-entropy between logits and one-hot labels.
+[44] Fast Gradient Sign Method (FGSM)
+[45] FGSM was coded to nudge pixels along the loss gradient. Each test image received a signed update scaled by epsilon.
+[46] The perturbation is calculated as: FGSM(x) = x + ε · sign(∇x J(θ, x, y)) where:
+[47] x represents the original image.
+[48] ε represents the perturbation strength.
+[49] J represents the loss function.
+[50] θ represents model parameters.
+[51] y represents the true label.
+[52] Four budgets—0.01, 0.03, 0.05, and 0.10—were passed through the attack script to see how accuracy dropped as epsilon grew.
+[53] Adversarial Training
+[54] For the robust run, FGSM copies of each batch were built during training and optimized with the original labels. Clean and perturbed tensors both fed the same loss. The layer stack matched the baseline so any gap in scores would come from training data, not architecture.
+[55] Evaluation Metrics
+[56] Scores were tracked using:
+[57] Classification Accuracy
+[58] Adversarial Accuracy
+[59] Multi-Epsilon Robustness Analysis
+[60] Confusion Matrix Evaluation
+[61] Visual Analysis of Adversarial Examples
+[62] Together these outputs gave both the headline percentages and the per-class error patterns seen after FGSM.
+[63] Experimental Setup
+[64] Development Environment
+[65] All scripts ran in Python with PyTorch inside a Windows virtual environment. VS Code was the editor. Training, attack generation, plotting, and matrix export shared one venv.
+[66] The primary software components used in this research include:
+[67] Python 3.x
+[68] PyTorch
+[69] Torchvision
+[70] Matplotlib
+[71] NumPy
+[72] Scikit-learn
+[73] Dataset Configuration
+[74] CIFAR-10 downloaded automatically through Torchvision into the local cache—50k train and 10k test images across the ten categories.
+[75] Tensors were normalized before the forward pass.
+[76] CNN Training Configuration
+[77] Baseline hyperparameters:
+[78] TABLE I
+BASELINE CNN TRAINING CONFIGURATION
+[79] After ten epochs the held-out 10k images were classified with 72.54% accuracy.
+[80] FGSM Attack Configuration
+[81] FGSM attacks were executed at inference time on saved weights; parameters were not updated during the attack pass.
+[82] Epsilon values tested:
+[83] 0.01, 0.03, 0.05, 0.10
+[84] Lower epsilons mimic subtle tampering; 0.10 adds stronger noise within the range used here.
+[85] The robust checkpoint was produced by mixing FGSM batches into ordinary training steps.
+[86] Robust training settings:
+[87] TABLE II
+ADVERSARIAL TRAINING CONFIGURATION
+[88] Both checkpoints were evaluated on the same 10k test tensors and the same four epsilon settings so the comparison stayed aligned.
+[89] Generated Artifacts
+[90] Files written during the run:
+[91] Epoch Accuracy Graph
+[92] FGSM Accuracy Comparison Graph
+[93] Multi-Epsilon Robustness Graph
+[94] Adversarial Example Visualization
+[95] Robust Adversarial Example Visualization
+[96] Confusion Matrix
+[97] Those plots and matrices were opened while writing the report to cross-check the console accuracy prints.
+[98] Results and Discussion
+[99] Baseline CNN Performance
+[100] Training finished without divergence. I then scored the baseline on untouched test images before touching the attack code.
+[101] The model achieved a test accuracy of 72.54%.
+[102] Figure 1. Training Accuracy of CNN Across Training Epochs
+[103] The epoch curve in Figure 1 climbed steadily, so the 72.54% clean score was used as the reference point for every FGSM run that followed.
+[104] Impact of FGSM Adversarial Attacks
+[105] FGSM was applied next at each listed epsilon. Accuracy was recomputed on the full test loader after perturbation. Table III summarizes baseline accuracy under FGSM.
+[106] TABLE III
+BASELINE CNN ACCURACY UNDER FGSM ATTACK
+[107] Testing results revealed a steep drop as epsilon increased. At 0.03 the score moved from 72.54% down to 7.34%, which is below the 10% random guess line for ten classes. The perturbation was hard to spot on screen.
+[108] Adversarial Example Analysis
+[109] Saved PNG pairs showed almost no visible gap between clean and adversarial frames, yet argmax labels often changed.
+[110] In one experimental example:
+[111] Original Prediction = 3
+[112] Adversarial Prediction = 5
+[113] Figure 4. Successful FGSM Attack Causing Prediction Change
+[114] Figure 5. Robust CNN Preserving Prediction Under FGSM Attack
+[115] The standard checkpoint flipped labels on many perturbed inputs. The retrained checkpoint kept the original class on the sample shown in Figure 5 under the same FGSM settings.
+[116] That pattern repeated across several manually inspected indices: small pixel edits, large logit swings on the baseline, smaller swings after adversarial training.
+[117] Adversarial Training Performance
+[118] After the robust training loop, clean test accuracy settled at 65.15%.
+[119] 65.15% sits about seven points under the baseline 72.54%, but attacked scores improved across every epsilon I logged.
+[120] Trading a slice of clean accuracy for higher FGSM scores matched what Madry et al. report for perturbed-batch training.
+[121] Robustness Evaluation of the Adversarial Trained Model
+[122] The same FGSM attack script was run on the robust checkpoint. Results are listed below.
+[123] TABLE IV
+ROBUST MODEL ACCURACY UNDER FGSM ATTACK
+[124] Figure 6. FGSM Accuracy Comparison Between Standard CNN and Adversarial Trained CNN.
+[125] Under attack the robust checkpoint held more correct labels at every epsilon in the tables.
+[126] At ε = 0.03, baseline CNN accuracy was 7.34% and robust CNN accuracy was 28.38%.
+[127] Comparison Between Standard and Robust Models
+[128] TABLE V
+COMPARISON BETWEEN STANDARD AND ROBUST MODELS
+[129] Clean accuracy dropped from 72.54% to 65.15%, yet FGSM accuracy at 0.03 rose from 7.34% to 28.38%. The trade-off showed up directly in Table V.
+[130] Confusion Matrix Analysis
+[131] A confusion matrix was exported from sklearn on baseline predictions.
+[132] Cat versus dog and automobile versus truck carried the heaviest off-diagonal counts at 32×32 resolution, which matches how similar those thumbnails look.
+[133] Errors were grouped by visual similarity rather than spread evenly across all ten labels.
+[134] Figure 7. Confusion Matrix of CNN Classification Results
+[135] Discussion
+[136] The baseline CNN handled normal CIFAR-10 frames well—72.54% on the test split—but the same file on disk failed once FGSM ran at test time. At ε = 0.03 only 7.34% of labels stayed correct. Side-by-side plots still looked like ordinary color images.
+[137] During implementation the attack loop was only a few lines: backward on the input, take signs, scale by epsilon, clamp to [0,1], forward again. Because that loop is cheap, any service that accepts user images and exposes gradients faces real tampering risk.
+
+Retraining with perturbed batches changed scores without touching layer sizes. Clean accuracy fell to 65.15%; attacked accuracy at ε = 0.03 climbed to 28.38%. Epsilon curves at 0.01, 0.05, and 0.10 moved the same way. The confusion matrix showed mistakes bunching around cat/dog and car/truck pairs, which lined up with what I saw when stepping through individual test indices.
+[138] These runs do not cover PGD, deeper nets, or production traffic. They do show that a competent clean score can hide brittle behavior under FGSM, and that mixing adversarial batches during training partially repairs that gap for the threat model I actually coded.
+[139] Limitations of the Study
+[140] Scope stayed narrow: one shallow CNN, CIFAR-10 only, FGSM only. PGD or DeepFool may punch through the same defense. Larger architectures and datasets would need their own reruns before these percentages travel outside the lab.
+[141] Conclusion
+[142] I trained a CIFAR-10 CNN, attacked it with FGSM at four epsilon values, and retrained with perturbed batches in the loop. Clean accuracy went from 72.54% to 65.15%. At ε = 0.03 attacked accuracy moved from 7.34% to 28.38%.
+[143] Plots, matrix counts, and saved image pairs all told the same story: the first checkpoint looked healthy on clean data yet broke under signed gradients; the second checkpoint lost a few clean points but survived the same attack script better. For deployments that accept outside images, building FGSM-aware training into the first model file is safer than bolting defense on after release.
+[144] 8. Future Work
+[145] FGSM-only defense helped in these runs, but the codebase could be extended in several ways.
+[146] Port the same evaluation harness to PGD, DeepFool, and Carlini–Wagner attacks and log how the robust checkpoint responds.
+[147] Try certified defenses or robust loss variants and compare training time against plain adversarial batches.
+[148] Repeat the pipeline on ResNet or VGG backbones with identical epsilon tables.
+[149] Move beyond CIFAR-10 to a higher-resolution set and check whether the accuracy gap widens.
+[150] Run domain-specific smoke tests in cybersecurity feeds, medical thumbnails, or autonomy datasets once compute budget allows.
+[151] Each extension would reuse the same logging format so new runs stay comparable to the numbers reported here.
+[152] 9. References
+[153] I. J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and Harnessing Adversarial Examples,” International Conference on Learning Representations (ICLR), 2015.
+[154] A. Krizhevsky, “Learning Multiple Layers of Features from Tiny Images,” University of Toronto, Technical Report, 2009.
+[155] Y. LeCun, Y. Bengio, and G. Hinton, “Deep Learning,” Nature, vol. 521, no. 7553, pp. 436–444, 2015.
+[156] N. Papernot et al., “Practical Black-Box Attacks against Machine Learning,” ACM Asia Conference on Computer and Communications Security, 2017.
+[157] A. Madry et al., “Towards Deep Learning Models Resistant to Adversarial Attacks,” International Conference on Learning Representations (ICLR), 2018

@@ -1,0 +1,162 @@
+[0] A Study of the Dark Side of AI: Adversarial Attacks on Deep Learning Systems and Defense Mechanisms
+[1] Gaurav Sharma , Dr.Sreevani Maddukuri
+[2] Gaurav Sharma (student), INT.Mtech CSE Spec. Cyber Security, VIT Bhopal Dr.Sreevani Maddukuri(supervisor), Dr. Hemraj .S.Lamkuche(reviewer 1),Puspinder Singh Patheja(reviewer 2), School of Computing Science Engineering and Artificial Intelligence, VIT Bhopal
+[4] ABSTRACT
+[5] AI has reshaped modern computing across sectors like cybersecurity, healthcare, and finance. But deep learning models have a real weakness: tiny, invisible tweaks to inputs can make them confidently predict the wrong thing. That's not a theoretical problem — it matters anywhere AI is deployed in the real world. My focus here is on adversarial attacks specifically, and on whether adversarial training can do anything meaningful about them. I trained a CNN on CIFAR-10, hit it with FGSM attacks at several perturbation strengths, and the results were sobering — accuracy cratered fast. When I retrained the model on a mix of clean and adversarial samples, it held up considerably better. Robustness graphs, confusion matrices, and visual comparisons all backed that up. The takeaway: security thinking needs to be part of how we build AI, not something bolted on later.
+[6] In this paper I look at whether adversarial training actually helps — not just in theory, but in practice, with real numbers. I trained a CNN on CIFAR-10, then hit it repeatedly with FGSM attacks across four perturbation strengths. The model fell apart quickly. Even at the weakest setting, accuracy dropped dramatically.
+[7] Retraining on mixed clean and adversarial batches recovered most of that lost ground. The retrained model still isn't perfect, but it's a very different story from the baseline — and the confusion matrices and robustness curves back that up.
+[8] Bottom line: if you're shipping a model into any environment where someone might try to manipulate inputs, robustness has to be a training objective — not an afterthought.
+[9] Introduction
+[10] Few technologies have moved as fast or spread as wide as AI. Hospital diagnostics, fraud detection, self-driving cars, content recommendation — these aren't future applications, they're running in production right now. Deep learning powers most of them. But that very success has made AI a target. As models get embedded in critical systems, adversaries have gotten serious about finding where they break. And break they do: data poisoning, model theft, membership inference, synthetic media — the attack surface is broad. Adversarial examples are probably the most studied of these threats, and for reasons that go beyond academic interest.
+[12] Adversarial perturbations are strange when you first encounter them. The modified image looks completely normal to any human who sees it. The model, though, is completely fooled — often with high confidence. That gap is the whole problem. In healthcare or security contexts, a fooled model isn't just wrong; it's dangerous.
+[13] The contributions here are: a working CNN classifier on CIFAR-10, FGSM attack evaluation at four epsilon levels, an adversarially trained version of the same model, and a comparison across all those dimensions. Nothing exotic — but the results are clear.
+[14] This paper attempts to make that threat concrete through controlled experiments on image classification. I trained a CNN on CIFAR-10 as the base classifier. FGSM — chosen for its simplicity and wide use as a benchmark — was then used to attack the model across a range of perturbation magnitudes. Beyond just measuring how badly the model fails, I also tested whether adversarial training can meaningfully close that gap. The evaluation covers clean accuracy, attack accuracy at multiple epsilon values, confusion matrix breakdowns, and visual inspection of adversarial samples.
+[15] The main contributions of this paper are:
+[16] A CNN classifier trained and benchmarked on CIFAR-10. A systematic FGSM attack evaluation across four epsilon values.
+[17] An empirical study of adversarial training as a practical defense.
+[18] A head-to-head comparison of the standard and robustly trained models.
+[19] Research on adversarial examples has a certain whiplash quality to it. The same models that post impressive accuracy numbers on benchmarks turn out to be trivially breakable with small, invisible perturbations. Early papers in this space genuinely surprised the community — not because adversarial examples existed, but because they were so easy to generate and so hard for models to resist. That turned out not to be a bug in one architecture; it's a structural property of how gradient-based models learn.
+[20] FGSM changed what the field could study. Before it, generating adversarial examples required optimization loops. FGSM did it in one step: compute the gradient of the loss with respect to the input, take its sign, multiply by epsilon, add to the image. That simplicity made it a standard baseline that everyone could reproduce. Stronger attacks came later — PGD, Carlini-Wagner, AutoAttack — but FGSM remains the entry point. The pattern those studies found was consistent: clean accuracy and adversarial accuracy are almost completely decoupled. A model can be 90%+ accurate on clean data and 0% accurate under even weak attacks. Adversarial training emerged as the most reliable defense, though never without a clean-accuracy cost.
+[21] Where the existing literature is thinner is in hands-on, reproducible demonstrations with real datasets and architectures. Knowing adversarial training helps is one thing. Seeing the actual numbers — 7.34% baseline vs. 28.38% robust at epsilon 0.03 — makes it real. That's the gap this paper fills.
+[22] The setup: CIFAR-10, a two-layer CNN, FGSM at four epsilon values, then the same model retrained with adversarial examples mixed in. Simple enough to be reproducible; representative enough to say something meaningful.
+[24] The experiments follow a straightforward pipeline: build a baseline CNN on CIFAR-10, attack it with FGSM across several epsilon values, retrain it with adversarial training, and compare the results. Each step is described below.
+[25] CIFAR-10 works well here because it's familiar, balanced, and small enough to run quickly on modest hardware. 60,000 images, 10 classes, 32×32 pixels. The 50k/10k train-test split is standard. I normalized the pixel values and used torchvision to load everything — nothing complicated.
+[26] Methodology
+[27] Quick summary of the dataset setup: 60,000 images, 10 categories, 32×32 pixels. Standard normalization before training.
+[28] Dataset
+[29] All experiments use CIFAR-10 as the image source. CIFAR-10 is a standard benchmark with 60,000 32×32 pixels distributed across 10 classes. The official split gives 50,000 images for training and 10,000 for testing.
+[30] The ten object categories are:
+[31] * Airplane
+[32] * Automobile
+[34] * Bird
+[35] * Cat
+[36] * Deer
+[37] * Dog
+[38] The CNN I used is deliberately minimal. Two conv layers, one max-pool, two fully connected layers. Adam optimizer, lr = 0.001, cross-entropy loss. Nothing that would win a competition — but that's the point. A simple baseline makes the attack results harder to explain away.
+[39] * Horse
+[40] * Ship
+[41] Architecture recap: two conv layers (3→32 channels, then 32→64), max-pooling, then two dense layers down to 10 output classes.
+[42] I loaded the dataset via PyTorch's torchvision library and normalized pixel values before feeding images into the network.
+[43] Convolutional Neural Network Architecture
+[44] The baseline model is a straightforward CNN — nothing exotic, which makes it a fair stand-in for commonly deployed architectures. It uses two conv layers, a max-pool step, and two fully connected layers.
+[45] The architecture breaks down as follows:
+[46] Convolution Layer 1: 3 input channels, 32 output channels, kernel size 3×3.
+[47] FGSM: compute the gradient of the loss w.r.t. the input, take the sign, scale by epsilon, add to the image. One forward pass, one backward pass, done. At epsilon = 0.03, the resulting image is visually unchanged. The model's accuracy is not.
+[48] Adam, lr = 0.001, cross-entropy loss — same optimizer settings as the baseline.
+[49] Fully Connected Layer 1: 4096 input features and 512 output features.
+[50] FGSM is almost elegant in its simplicity. Given an input x, it computes the gradient of the loss with respect to x, takes the sign of that gradient, and scales it by epsilon. That one-step perturbation is enough to mislead most standard models. I tested four epsilon values — 0.01, 0.03, 0.05, and 0.10 — to track how attack effectiveness scales with perturbation budget.
+[51] Training used Adam (lr = 0.001) with cross-entropy loss.
+[52] Fast Gradient Sign Method (FGSM)
+[53] For the attack side, I implemented FGSM. FGSM works by nudging each pixel in the direction that maximally increases the loss — one step, scaled by epsilon.
+[54] The perturbation is calculated as: FGSM(x) = x + ε · sign(∇x J(θ, x, y)) where:
+[55] Adversarial training works like this: for every mini-batch, generate FGSM adversarial versions of the inputs, mix them with the clean inputs, and train on both. The model sees adversarial examples throughout training, not just at test time. That forces it to learn features that don't immediately collapse under perturbation. The cost is predictable — clean accuracy drops, because the model is now optimizing for two objectives simultaneously.
+[56] * ε represents the perturbation strength.
+[58] * J represents the loss function.
+[59] Same procedure as above: on-the-fly FGSM generation per batch, mixed training on clean plus adversarial. The apples-to-apples comparison uses identical test sets and attack configs for both the baseline and robust models.
+[60] * y represents the true label.
+[61] I tested four epsilon values to see how attack severity scales with perturbation budget.
+[62] Adversarial Training
+[63] The metrics work together: accuracy numbers show scale, confusion matrices show which classes are worst affected, and the visual examples let you see what 'imperceptible perturbation' actually means in practice.
+[64] Evaluation Metrics
+[65] I used the following metrics to assess performance:
+[66] Everything ran locally — Python, PyTorch, VS Code on Windows, inside a virtual environment. Libraries: torchvision, matplotlib, NumPy, scikit-learn. Nothing that required special hardware or cloud resources.
+[68] Multi-Epsilon Robustness Analysis
+[69] Confusion Matrix Evaluation
+[70] Everything ran in Python and PyTorch, inside a virtual environment on a Windows machine using VS Code. Dependencies included torchvision, matplotlib, NumPy, and scikit-learn — nothing unusual.
+[71] These metrics give complementary views: numbers quantify the damage, confusion matrices show which classes suffer most, and visual examples make the threat tangible.
+[72] Experimental Setup
+[73] Development Environment
+[74] All experiments ran in Python using PyTorch. I developed and ran everything in VS Code on Windows. Training, attack generation, and visualization all ran inside a virtual environment to keep dependencies isolated.
+[75] The main libraries used were:
+[76] * Python 3.x
+[77] * PyTorch
+[78] * Torchvision
+[79] * Matplotlib
+[81] * NumPy
+[82] * Scikit-learn
+[83] Dataset Configuration
+[84] Torchvision handled the CIFAR-10 download automatically. The dataset has 50,000 training and 10,000 test images across ten categories.
+[85] Images were converted to tensors and normalized before being fed to the network.
+[86] CNN Training Configuration
+[87] The baseline CNN was trained with these settings:
+[94] On clean test data, the baseline CNN reached 72.54% accuracy.
+[95] FGSM Attack Configuration
+[96] I used FGSM to generate adversarial examples and stress-test both models.
+[97] The epsilon values tested were: Epsilon Value
+[98] 0.01, 0.03 ,0.05,0.10
+[100] Those outputs — accuracy graphs, robustness curves, confusion matrices, visual samples — give a complete picture of what's happening under attack.
+[101] Adversarial training used FGSM-generated examples mixed into each training batch.
+[102] The final robust model was trained using:
+[106] Both models were evaluated on identical test sets and attack configurations to keep comparisons fair.
+[107] Stable training, good generalization, 72.54% test accuracy. That's the baseline we're attacking.
+[108] The experiments produced several outputs for analysis:
+[109] With a solid baseline in hand, I ran FGSM at four epsilon values. The results are blunt.
+[110] Here's what the attack does to accuracy:
+[111] At epsilon = 0.03 — visually imperceptible — the model goes from 72.54% to 7.34%. That's not degraded performance; that's failure. And epsilon = 0.03 is not an aggressive attack. A determined adversary would push harder.
+[112] * Adversarial Example Visualization
+[113] * Robust Adversarial Example Visualization
+[114] The visual comparison makes the point vividly. Original and adversarial images look identical to a human. The CNN's prediction flips completely. In one test case, the model went from predicting class 3 to predicting class 5 — a completely different category — based on noise that no person would notice.
+[115] Together, these give both quantitative and qualitative insight into model behavior under attack.
+[116] Results and Discussion
+[117] Baseline CNN Performance
+[118] Before running any attacks, I first established the model's clean-data performance.
+[120] The standard CNN has no reliable defense against even single-step FGSM. The robustly trained version maintained its prediction on the same input — a meaningful qualitative difference that the accuracy tables also confirm.
+[121] What the visual examples show, the numbers confirm: human-invisible perturbations are model-devastating. This is not a niche finding — it applies broadly across architectures and datasets.
+[123] After seeing the baseline collapse, I ran adversarial training. The robust model's clean-data accuracy came in at 65.15% — about 7 percentage points lower than the baseline. That is the cost of robustness, and it is real. But look at what it buys under attack.
+[124] That is a reasonable result for this architecture and confirms the model learned useful features — a solid starting point before introducing perturbations.
+[125] Seven points of clean accuracy is a fair price for a model that does not fall apart under attack. In a security context, a model at 65% accuracy that holds up under adversarial conditions is more useful than one at 72% that collapses to 7%.
+[126] This accuracy-robustness tradeoff is not specific to this experiment — it shows up consistently in the adversarial ML literature. Getting both high clean accuracy and high adversarial accuracy at the same time is an open research problem.
+[127] This accuracy-robustness tension isn't new — the literature has documented it consistently, and these results land right where you'd expect.
+[132] Accuracy collapses rapidly as epsilon increases. Even a relatively small perturbation value of 0.03 reduced model accuracy from 72.54% to 7.34%, demonstrating the vulnerability of deep learning models to adversarial
+[134] At epsilon = 0.03, baseline accuracy: 7.34%. Robust model accuracy: 28.38%. That is nearly four times better, from adversarial training alone — no architectural changes, no additional data.
+[135] Adversarial Example Analysis
+[136] Seven points of clean accuracy lost; roughly four times the adversarial resilience gained. That's a trade worth making in almost any security-facing deployment.
+[137] In one experimental example:
+[138] The confusion matrix breaks down errors by class — useful for understanding not just how much the model fails, but where.
+[139] Cats and dogs blur together; automobiles and trucks do too. That's expected — these pairs are genuinely similar, and adversarial noise amplifies the existing ambiguity. It suggests that targeted augmentation on these class pairs might help.
+[140] No catastrophic class-level failures either — the errors distribute in ways that make visual sense, rather than the model being effectively useless on specific categories.
+[141] Figure 4. Successful FGSM Attack Causing Prediction Change
+[143] The results aren't ambiguous. A model that performs at 72.54% under normal conditions drops to 7.34% under an epsilon = 0.03 attack — one that's invisible to any human reviewer. If you're deploying a model in any context where inputs might be adversarially manipulated, that's not an acceptable failure mode.
+[144] Adversarial training changes the outcome. You give up around 7 percentage points of clean accuracy, and in return you get a model that scores 28.38% under the attack that broke the baseline. In security engineering, that's not a hard call.
+[145] If adversarial inputs are on the threat model — and for any security application they should be — then robustness needs to be a training objective from the start. Trying to add it after deployment is both harder and less effective.
+[146] Adversarial Training Performance
+[148] After seeing how badly the baseline fails, the natural next step was adversarial training. After adversarial training, the model achieved:
+[149] Deep learning models are powerful and brittle in equal measure. This paper demonstrates both properties concretely: a reasonable CNN collapses under adversarial pressure that no human would notice, and adversarial training brings it back to something workable. The 28.38% vs. 7.34% comparison at epsilon = 0.03 is the number that matters most — it shows that adversarial training isn't theoretical. It works, it ships, and it's worth the clean-accuracy cost.
+[150] Security and accuracy pull in different directions, but they're not incompatible. The tools to build more resilient models already exist. The question is whether teams building production AI treat robustness as a first-class objective — this work suggests they should.
+[151] This accuracy-robustness tradeoff is well documented in the literature, and these results are consistent with what others have found.
+[152] A few directions worth pursuing next:
+[178] Figure 6. FGSM Accuracy Comparison Between Standard CNN and Adversarial Trained CNN.
+[179] Across all epsilon values, the robust model holds up far better than the baseline.
+[181] For example: * Baseline CNN at ε = 0.03 → 7.34%
+[182] * Robust CNN at ε = 0.03 → 28.38%
+[183] The gap is substantial and validates adversarial training as a practical, meaningful defense.
+[186] Comparison Between Standard and Robust Models
+[187] The tradeoff is real but, in most security-oriented applications, well worth making. The literature consistently reports this pattern, and the results here confirm it holds for this architecture and dataset.
+[188] Confusion Matrix Analysis
+[190] I also generated a confusion matrix to get a class-by-class view of where errors concentrate.
+[191] Predictably, visually similar categories — cats vs. dogs, automobiles vs. trucks — account for the bulk of off-diagonal entries. This kind of analysis helps pinpoint where the architecture could benefit most from targeted improvements.
+[192] It also confirms that the quantitative accuracy numbers are not hiding a model that performs well on some classes but fails catastrophically on others.
+[194] Figure 7. Confusion Matrix of CNN Classification Results
+[196] Discussion
+[197] Taken as a whole, the results make the threat hard to ignore. A model that performs reasonably well under normal conditions essentially fell apart the moment adversarial examples entered the picture.
+[198] But the adversarial training results show there is a concrete path forward. Yes, clean accuracy drops a bit — but the model no longer collapses under attack, which is the more important property in a security context.
+[199] For any application where reliability under adversarial conditions matters — security systems, medical imaging, autonomous vehicles — treating robustness as a core design goal rather than an afterthought is essential.
+[200] Limitations of the Study
+[201] This work has real limitations worth being upfront about. The CNN used here is intentionally simple, and CIFAR-10, while standard, is not representative of every real-world distribution. More importantly, adversarial training against FGSM offers no guarantees against stronger attacks like PGD or Carlini-Wagner — evaluating those is a necessary next step. Future work should stress-test these defenses on deeper architectures, larger datasets, and a wider range of attack methods.
+[202] Conclusion
+[203] AI's rapid rise has brought enormous benefits — and genuine security risks that can no longer be treated as edge cases. Adversarial examples sit near the top of that risk list, precisely because they expose a gap between how models and humans perceive the world. In this paper, I set out to quantify that vulnerability and test a practical remedy. The baseline CNN's accuracy cratered under even mild FGSM perturbations — from 72.54% down to single digits at epsilon = 0.03. Adversarial training brought meaningful improvement. The retrained model held 28.38% accuracy at epsilon = 0.03 versus the baseline's 7.34%, while clean-data accuracy stayed above 65%. Robustness curves, confusion matrices, and visual examples all told a consistent story.
+[204] Ultimately, this work adds to a growing body of evidence that security needs to be built into the AI development process — and that adversarial training is a practical, deployable tool for doing exactly that.security-critical environments including cybersecurity, autonomous systems, and healthcare.
+[205] 8.Future Work
+[206] Although the proposed defense mechanism improved robustness against FGSM attacks, several
+[208] opportunities remain for future research.
+[209] First, the defense should be tested against stronger attacks: PGD, DeepFool, and Carlini-Wagner are all natural next targets.
+[210] Second, comparing adversarial training against certified defenses and robust optimization would clarify when each approach is most appropriate.
+[211] Third, applying the same pipeline to ResNet or VGG-style architectures would test whether these findings generalize. 3.Evaluation of robustness on larger and more complex datasets.
+[212] 4.Exploration of adversarial threats in domains such as cybersecurity, autonomous systems, healthcare, and privacy-preserving AI.
+[213] Each of these directions pushes toward the shared goal: AI systems that are genuinely trustworthy, not just accurate under ideal conditions.
+[214] 9.References
+[215] I. J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and Harnessing Adversarial Examples,” International Conference on Learning Representations (ICLR), 2015.
+[216] A. Krizhevsky, “Learning Multiple Layers of Features from Tiny Images,” University of Toronto, Technical Report, 2009.
+[217] Y. LeCun, Y. Bengio, and G. Hinton, “Deep Learning,” Nature, vol. 521, no. 7553, pp. 436– 444, 2015.
+[218] N. Papernot et al., “Practical Black-Box Attacks against Machine Learning,” ACM Asia Conference on Computer and Communications Security, 2017.
+[219] A. Madry et al., “Towards Deep Learning Models Resistant to Adversarial Attacks,” International Conference on Learning Representations (ICLR), 2018

@@ -1,0 +1,22 @@
+[5] A custom convolutional network was trained on CIFAR-10 and checked first on clean test images, then under Fast Gradient Sign Method (FGSM) perturbations. Clean evaluation gave 72.54% accuracy. The same weights collapsed once FGSM noise was added at test time.
+
+[6] Evaluation under FGSM at ε = 0.03 pulled attacked accuracy down to 7.34%. The perturbed frames still looked like the originals when displayed side by side. A second training pass mixed FGSM samples into each batch. That run finished with 65.15% on clean data and 28.38% when the identical ε = 0.03 attack was replayed on the test set.
+
+[7] Epsilon sweeps, a confusion matrix, and saved image pairs were used to read the gap between the two checkpoints. Testing results revealed that strong clean scores do not, by themselves, signal safe behavior once gradient-based tampering is applied.
+
+[10] Image classifiers built with convolutional layers are now part of fraud checks, hospital software, and traffic cameras. During implementation I relied on backpropagation: each epoch updates weights using the loss gradient. That same gradient can be read at inference and flipped to craft misleading inputs. The picture may look unchanged, yet the softmax output jumps to another class. These samples are called adversarial examples.
+
+[22] Szegedy et al. and Goodfellow et al. showed an odd split: a network can score well on a held-out set yet flip its label when pixels shift by a tiny bounded amount. The failure tracks how the model partitions pixel space, not a single bug in one layer.
+
+Goodfellow et al. published FGSM as a one-pass attack that follows the sign of the input gradient. I chose it because the code path is short—one forward pass, one backward pass, one signed update. PGD and Carlini–Wagner attacks are stronger, but FGSM still shows up in coursework and baseline papers, so it fit this project scope.
+
+[27] The pipeline had five coded stages: load CIFAR-10, train the baseline CNN, generate FGSM examples, run adversarial retraining, and score both models with the same test scripts.
+
+[118] Training finished without divergence. I then scored the baseline on untouched test images before touching the attack code.
+
+[197] The baseline CNN handled normal CIFAR-10 frames well—72.54% on the test split—but the same file on disk failed once FGSM ran at test time. At ε = 0.03 only 7.34% of labels stayed correct. Side-by-side plots still looked like ordinary color images.
+
+[203] I trained a CIFAR-10 CNN, attacked it with FGSM at four epsilon values, and retrained with perturbed batches in the loop. Clean accuracy went from 72.54% to 65.15%. At ε = 0.03 attacked accuracy moved from 7.34% to 28.38%.
+
+[209] Port the same evaluation harness to PGD, DeepFool, and Carlini–Wagner attacks and log how the robust checkpoint responds.
+

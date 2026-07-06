@@ -1,0 +1,241 @@
+FILE: pdfff_revised.docx
+paragraphs: 221 tables: 5
+
+[0] style=Title | A Study of the Dark Side of AI: Adversarial Attacks on Deep Learning Systems and Defense Mechanisms
+[1] style=Heading 1 | Gaurav Sharma , Dr.Sreevani Maddukuri
+[3] EMPTY style=Body Text
+[4] style=Heading 1 | ABSTRACT
+[8] EMPTY style=Body Text
+[9] style=Heading 1 | Introduction
+[11] EMPTY style=Body Text
+[14] EMPTY style=Body Text
+[15] style=Body Text | The primary contributions of this work are as follows:
+[16] style=List Paragraph | Built and trained a custom CNN on CIFAR-10 with documented hyperparameters. Ran FGSM at four epsilon settings against the baseline checkpoint.
+[17] style=List Paragraph | Retrained the same architecture with adversarial samples generated inside the training loop.
+[18] style=List Paragraph | Compared both checkpoints using numeric metrics and stored visual examples from the test run.
+[19] style=List Paragraph | Recorded what the numbers imply for deploying classifiers where input tampering is plausible.
+[20] EMPTY style=Body Text
+[21] style=Heading 1 | Literature Review
+[23] EMPTY style=Body Text
+[25] EMPTY style=Normal
+[26] style=Heading 1 | Methodology
+[27] style=Body Text | The pipeline had five coded stages: load CIFAR-10, train the baseline CNN, generate FGSM examples, run adversarial retraining, and score both models with the same test scripts.
+[28] style=Heading 1 | Dataset
+[29] style=Body Text | CIFAR-10 was the sole dataset. It ships 60,000 color images at 32×32 pixels across ten object labels. The standard split keeps 50,000 frames for training and 10,000 for testing.
+[30] style=Body Text | The ten classes included in the dataset are:
+[31] style=Body Text | * Airplane
+[32] style=Body Text | * Automobile
+[33] EMPTY style=Body Text
+[34] style=Body Text | * Bird
+[35] style=Body Text | * Cat
+[36] style=Body Text | * Deer
+[37] style=Body Text | * Dog
+[38] style=Body Text | * Frog
+[39] style=Body Text | * Horse
+[40] style=Body Text | * Ship
+[41] style=Body Text | * Truck
+[42] style=Body Text | Torchvision pulled the files on first run. Each image was cast to a tensor before entering the network.
+[43] style=Heading 1 | Convolutional Neural Network Architecture
+[45] style=Body Text | Layer settings used in code:
+[46] style=List Paragraph | Convolution Layer 1: 3 input channels, 32 output channels, kernel size 3×3.
+[47] style=List Paragraph | Convolution Layer 2: 32 input channels, 64 output channels, kernel size 3×3.
+[48] style=List Paragraph | Max Pooling Layer: Pool size 2×2.
+[49] style=List Paragraph | Fully Connected Layer 1: 4096 input features and 512 output features.
+[50] style=List Paragraph | Fully Connected Layer 2: 512 input features and 10 output classes.
+[51] style=Body Text | Adam at learning rate 0.001 minimized cross-entropy between logits and one-hot labels.
+[52] style=Heading 1 | Fast Gradient Sign Method (FGSM)
+[53] style=Body Text | FGSM was coded to nudge pixels along the loss gradient. Each test image received a signed update scaled by epsilon.
+[54] style=Body Text | The perturbation is calculated as: FGSM(x) = x + ε · sign(∇x J(θ, x, y)) where:
+[55] style=Body Text | * x represents the original image.
+[56] style=Body Text | * ε represents the perturbation strength.
+[57] EMPTY style=Body Text
+[58] style=Body Text | * J represents the loss function.
+[59] style=Body Text | * θ represents model parameters.
+[60] style=Body Text | * y represents the true label.
+[61] style=Body Text | Four budgets—0.01, 0.03, 0.05, and 0.10—were passed through the attack script to see how accuracy dropped as epsilon grew.
+[62] style=Heading 1 | Adversarial Training
+[64] style=Heading 1 | Evaluation Metrics
+[65] style=Body Text | Scores were tracked using:
+[66] style=List Paragraph | Classification Accuracy
+[67] style=List Paragraph | Adversarial Accuracy
+[68] style=List Paragraph | Multi-Epsilon Robustness Analysis
+[69] style=List Paragraph | Confusion Matrix Evaluation
+[70] style=List Paragraph | Visual Analysis of Adversarial Examples
+[71] style=Body Text | Together these outputs gave both the headline percentages and the per-class error patterns seen after FGSM.
+[72] style=Heading 1 | Experimental Setup
+[73] style=List Paragraph | Development Environment
+[74] style=Body Text | All scripts ran in Python with PyTorch inside a Windows virtual environment. VS Code was the editor. Training, attack generation, plotting, and matrix export shared one venv.
+[75] style=Body Text | The primary software components used in this research include:
+[76] style=Body Text | * Python 3.x
+[77] style=Body Text | * PyTorch
+[78] style=Body Text | * Torchvision
+[79] style=Body Text | * Matplotlib
+[80] EMPTY style=Body Text
+[81] style=Body Text | * NumPy
+[82] style=Body Text | * Scikit-learn
+[83] style=Heading 1 | Dataset Configuration
+[84] style=Body Text | CIFAR-10 downloaded automatically through Torchvision into the local cache—50k train and 10k test images across the ten categories.
+[85] style=Body Text | Tensors were normalized before the forward pass.
+[86] style=Heading 1 | CNN Training Configuration
+[87] style=Body Text | Baseline hyperparameters:
+[88] EMPTY style=Body Text
+[89] EMPTY style=Body Text
+[90] EMPTY style=Body Text
+[91] EMPTY style=Body Text
+[92] EMPTY style=Body Text
+[93] EMPTY style=Body Text
+[94] style=Body Text | After ten epochs the held-out 10k images were classified with 72.54% accuracy.
+[95] style=Heading 1 | FGSM Attack Configuration
+[96] style=Body Text | FGSM attacks were executed at inference time on saved weights; parameters were not updated during the attack pass.
+[97] style=Body Text | Epsilon values tested:
+[98] style=Body Text | 0.01, 0.03 ,0.05,0.10
+[99] EMPTY style=Body Text
+[100] style=Body Text | Lower epsilons mimic subtle tampering; 0.10 adds stronger noise within the range used here.
+[101] style=Body Text | The robust checkpoint was produced by mixing FGSM batches into ordinary training steps.
+[102] style=Body Text | Robust training settings:
+[103] EMPTY style=Body Text
+[104] EMPTY style=Body Text
+[105] EMPTY style=Body Text
+[106] style=Body Text | Both checkpoints were evaluated on the same 10k test tensors and the same four epsilon settings so the comparison stayed aligned.
+[107] style=Heading 1 | Generated Artifacts
+[108] style=Body Text | Files written during the run:
+[109] style=Body Text | * Epoch Accuracy Graph
+[110] style=Body Text | * FGSM Accuracy Comparison Graph
+[111] style=Body Text | * Multi-Epsilon Robustness Graph
+[112] style=Body Text | * Adversarial Example Visualization
+[113] style=Body Text | * Robust Adversarial Example Visualization
+[114] style=Body Text | * Confusion Matrix
+[115] style=Body Text | Those plots and matrices were opened while writing the report to cross-check the console accuracy prints.
+[116] style=Heading 1 | Results and Discussion
+[117] style=List Paragraph | Baseline CNN Performance
+[118] style=Body Text | Training finished without divergence. I then scored the baseline on untouched test images before touching the attack code.
+[119] EMPTY style=Body Text
+[120] style=Body Text | The model achieved a test accuracy of:
+[121] style=Normal | 72.54%
+[122] EMPTY style=Body Text
+[123] style=Body Text | Figure 1. Training Accuracy of CNN Across Training Epochs
+[124] style=Body Text | The epoch curve in Figure 1 climbed steadily, so the 72.54% clean score was used as the reference point for every FGSM run that followed.
+[125] style=Heading 1 | Impact of FGSM Adversarial Attacks
+[126] style=Body Text | FGSM was applied next at each listed epsilon. Accuracy was recomputed on the full test loader after perturbation.
+[127] style=Body Text | Baseline attacked accuracy is listed in the table below.
+[128] EMPTY style=Body Text
+[129] EMPTY style=Body Text
+[130] EMPTY style=Body Text
+[131] EMPTY style=Body Text
+[133] EMPTY style=Body Text
+[134] EMPTY style=Body Text
+[135] style=Heading 1 | Adversarial Example Analysis
+[136] style=Body Text | Saved PNG pairs showed almost no visible gap between clean and adversarial frames, yet argmax labels often changed.
+[137] style=Body Text | In one experimental example:
+[138] style=Body Text | * Original Prediction = 3
+[139] style=Body Text | * Adversarial Prediction = 5
+[140] EMPTY style=Body Text
+[141] style=Body Text | Figure 4. Successful FGSM Attack Causing Prediction Change
+[142] EMPTY style=Normal
+[143] style=Body Text | Figure 5. Robust CNN Preserving Prediction Under FGSM Attack
+[144] style=Body Text | The standard checkpoint flipped labels on many perturbed inputs. The retrained checkpoint kept the original class on the sample shown in Figure 5 under the same FGSM settings.
+[145] style=Body Text | That pattern repeated across several manually inspected indices: small pixel edits, large logit swings on the baseline, smaller swings after adversarial training.
+[146] style=Heading 1 | Adversarial Training Performance
+[147] EMPTY style=Heading 1
+[148] style=Body Text | After the robust training loop, clean test accuracy settled at:
+[149] style=Heading 1 | 65.15% Classification Accuracy
+[150] style=Body Text | 65.15% sits about seven points under the baseline 72.54%, but attacked scores improved across every epsilon I logged.
+[151] style=Body Text | Trading a slice of clean accuracy for higher FGSM scores matched what Madry et al. report for perturbed-batch training.
+[152] style=Heading 1 | Robustness Evaluation of the Adversarial Trained Model
+[153] style=Body Text | The same attack script was pointed at the robust weights. Table 2. Robust Model Accuracy Under FGSM Attack
+[154] EMPTY style=Body Text
+[155] EMPTY style=Body Text
+[156] EMPTY style=Body Text
+[157] EMPTY style=Body Text
+[158] EMPTY style=Body Text
+[159] EMPTY style=Table Paragraph
+[160] EMPTY style=Normal
+[161] style=Body Text | 5.5 Robustness Evaluation of the Adversarially Trained Model The robust model was evaluated using the same FGSM attack strengths
+[162] EMPTY style=Body Text
+[163] EMPTY style=Body Text
+[164] EMPTY style=Body Text
+[165] EMPTY style=Body Text
+[166] EMPTY style=Body Text
+[167] EMPTY style=Body Text
+[168] EMPTY style=Body Text
+[169] EMPTY style=Body Text
+[170] EMPTY style=Body Text
+[171] EMPTY style=Body Text
+[172] EMPTY style=Body Text
+[173] EMPTY style=Body Text
+[174] EMPTY style=Body Text
+[175] EMPTY style=Body Text
+[176] EMPTY style=Body Text
+[177] EMPTY style=Body Text
+[178] style=Body Text | Figure 6. FGSM Accuracy Comparison Between Standard CNN and Adversarial Trained CNN.
+[179] style=Body Text | Under attack the robust checkpoint held more correct labels at every epsilon in the tables.
+[180] EMPTY style=Body Text
+[181] style=Body Text | For example: * Baseline CNN at ε = 0.03 → 7.34%
+[182] style=Body Text | * Robust CNN at ε = 0.03 → 28.38%
+[183] style=Body Text | At ε = 0.03 the gap was 7.34% versus 28.38% with identical code paths and data.
+[184] EMPTY style=Body Text
+[185] EMPTY style=Body Text
+[186] style=Heading 1 | Comparison Between Standard and Robust Models
+[187] style=Body Text | Clean accuracy dropped from 72.54% to 65.15%, yet FGSM accuracy at 0.03 rose from 7.34% to 28.38%. The trade-off showed up directly in Table 4.
+[188] style=Heading 1 | Confusion Matrix Analysis
+[189] EMPTY style=Body Text
+[190] style=Body Text | A confusion matrix was exported from sklearn on baseline predictions.
+[191] style=Body Text | Cat versus dog and automobile versus truck carried the heaviest off-diagonal counts at 32×32 resolution, which matches how similar those thumbnails look.
+[192] style=Body Text | Errors were grouped by visual similarity rather than spread evenly across all ten labels.
+[193] EMPTY style=Body Text
+[194] style=Body Text | Figure 7. Confusion Matrix of CNN Classification Results
+[195] EMPTY style=Body Text
+[196] style=Heading 1 | Discussion
+[200] style=Heading 1 | Limitations of the Study
+[202] style=Heading 1 | Conclusion
+[205] style=Heading 1 | 8.Future Work
+[206] style=Body Text | FGSM-only defense helped in these runs, but the codebase could be extended in several ways.
+[207] EMPTY style=Body Text
+[208] EMPTY style=Body Text
+[209] style=Body Text | Port the same evaluation harness to PGD, DeepFool, and Carlini–Wagner attacks and log how the robust checkpoint responds.
+[210] style=List Paragraph | Try certified defenses or robust loss variants and compare training time against plain adversarial batches.
+[211] style=List Paragraph | Repeat the pipeline on ResNet or VGG backbones with identical epsilon tables.
+[212] style=List Paragraph | Move beyond CIFAR-10 to a higher-resolution set and check whether the accuracy gap widens.
+[213] style=List Paragraph | Run domain-specific smoke tests in cybersecurity feeds, medical thumbnails, or autonomy datasets once compute budget allows.
+[214] style=Body Text | Each extension would reuse the same logging format so new runs stay comparable to the numbers reported here.
+[215] style=Heading 1 | 9.References
+[216] style=List Paragraph | I. J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and Harnessing Adversarial Examples,” International Conference on Learning Representations (ICLR), 2015.
+[217] style=List Paragraph | A. Krizhevsky, “Learning Multiple Layers of Features from Tiny Images,” University of Toronto, Technical Report, 2009.
+[218] style=List Paragraph | Y. LeCun, Y. Bengio, and G. Hinton, “Deep Learning,” Nature, vol. 521, no. 7553, pp. 436–444, 2015.
+[219] style=List Paragraph | N. Papernot et al., “Practical Black-Box Attacks against Machine Learning,” ACM Asia Conference on Computer and Communications Security, 2017.
+[220] style=List Paragraph | A. Madry et al., “Towards Deep Learning Models Resistant to Adversarial Attacks,” International Conference on Learning Representations (ICLR), 2018
+
+---TABLES---
+Table 0 rows=8 cols=2
+  '\nParameter' | '\nValue'
+  '\nOptimizer' | '\nAdam'
+  '\nLearning Rate' | '\n0.001'
+  '\nLoss Function' | '\nCross Entropy Loss'
+  '\nBatch Size' | '\n32'
+  '\nDataset' | '\nCIFAR-10'
+  '\nTraining Images' | '\n50,000'
+  '\nTesting Images' | '\n10,000'
+Table 1 rows=7 cols=2
+  'Parameter' | 'Value'
+  'Adversarial Attack' | 'FGSM'
+  'Training Epsilon' | '0.03'
+  'Epochs' | '10'
+  'Optimizer' | 'Adam'
+  'Learning Rate' | '0.001'
+  'Loss Function' | 'Combined Clean And Adversarial Loss'
+Table 2 rows=5 cols=2
+  'Epsilon' | 'Accuracy(%)'
+  '0.01' | '23.13'
+  '0.03' | '7.34'
+  '0.05' | '3.35'
+  '0.10' | '1.04'
+Table 3 rows=5 cols=2
+  'Epsilon' | 'Robust Accuracy (%)'
+  '\n0.01' | '\n49.87'
+  '\n0.03' | '\n28.38'
+  '0.05' | '16.09'
+  '\n0.10' | '\n4.63'
+Table 4 rows=3 cols=3
+  'Metric' | 'Standard CNN' | 'Robust CNN'
+  'Clean Accuracy' | '72.54%' | '65.15%'
+  'FGSM Accuracy (ε=0.03)' | '7.32%' | '28.38%'

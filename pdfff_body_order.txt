@@ -1,0 +1,170 @@
+P: A Study of the Dark Side of AI: Adversarial Attacks on Deep Learning Systems and Defense Mechanisms
+P: Gaurav Sharma , Dr.Sreevani Maddukuri
+P: Gaurav Sharma (student), INT.Mtech CSE Spec. Cyber Security, VIT Bhopal Dr.Sreevani Maddukuri(supervisor), Dr. Hemraj .S
+P: ABSTRACT
+P: A custom convolutional network was trained on CIFAR-10 and checked first on clean test images, then under Fast Gradient 
+P: Evaluation under FGSM at ε = 0.03 pulled attacked accuracy down to 7.34%. The perturbed frames still looked like the ori
+P: Epsilon sweeps, a confusion matrix, and saved image pairs were used to read the gap between the two checkpoints. Testing
+P: Introduction
+P: Image classifiers built with convolutional layers are now part of fraud checks, hospital software, and traffic cameras. 
+P: Model behavior changed when I fed such inputs into the trained CNN. Wrong labels appeared with high confidence even thou
+P: The work reported here walks through one full pipeline on CIFAR-10. I trained a baseline CNN, logged clean accuracy, ran
+P: The primary contributions of this work are as follows:
+P: Built and trained a custom CNN on CIFAR-10; ran FGSM at four epsilon settings against the baseline checkpoint.
+P: Retrained the same architecture with adversarial samples generated inside the training loop.
+P: Compared both checkpoints using numeric metrics and stored visual examples from the test run.
+P: Recorded what the numbers imply for deploying classifiers where input tampering is plausible.
+P: Literature Review
+P: Szegedy et al. and Goodfellow et al. showed an odd split: a network can score well on a held-out set yet flip its label 
+P: Madry et al. trained on perturbed batches so the network sees hostile inputs while weights are still moving. Reported ru
+P: Methodology
+P: The pipeline had five coded stages: load CIFAR-10, train the baseline CNN, generate FGSM examples, run adversarial retra
+P: Dataset
+P: CIFAR-10 was the sole dataset. It ships 60,000 color images at 32×32 pixels across ten object labels. The standard split
+P: The ten classes included in the dataset are:
+P: Airplane
+P: Automobile
+P: Bird
+P: Cat
+P: Deer
+P: Dog
+P: Frog
+P: Horse
+P: Ship
+P: Truck
+P: Torchvision pulled the files on first run. Each image was cast to a tensor before entering the network.
+P: Convolutional Neural Network Architecture
+P: The baseline classifier is a shallow CNN: two convolution blocks, one pool, then two dense layers. Layer sizes were kept
+P: Layer settings used in code:
+P: Convolution Layer 1: 3 input channels, 32 output channels, kernel size 3×3.
+P: Convolution Layer 2: 32 input channels, 64 output channels, kernel size 3×3.
+P: Max Pooling Layer: Pool size 2×2.
+P: Fully Connected Layer 1: 4096 input features and 512 output features.
+P: Fully Connected Layer 2: 512 input features and 10 output classes.
+P: Adam at learning rate 0.001 minimized cross-entropy between logits and one-hot labels.
+P: Fast Gradient Sign Method (FGSM)
+P: FGSM was coded to nudge pixels along the loss gradient. Each test image received a signed update scaled by epsilon.
+P: The perturbation is calculated as: FGSM(x) = x + ε · sign(∇x J(θ, x, y)) where:
+P: x represents the original image.
+P: ε represents the perturbation strength.
+P: J represents the loss function.
+P: θ represents model parameters.
+P: y represents the true label.
+P: Four budgets—0.01, 0.03, 0.05, and 0.10—were passed through the attack script to see how accuracy dropped as epsilon gre
+P: Adversarial Training
+P: For the robust run, FGSM copies of each batch were built during training and optimized with the original labels. Clean a
+P: Evaluation Metrics
+P: Scores were tracked using:
+P: Classification Accuracy
+P: Adversarial Accuracy
+P: Multi-Epsilon Robustness Analysis
+P: Confusion Matrix Evaluation
+P: Visual Analysis of Adversarial Examples
+P: Together these outputs gave both the headline percentages and the per-class error patterns seen after FGSM.
+P: Experimental Setup
+P: Development Environment
+P: All scripts ran in Python with PyTorch inside a Windows virtual environment. VS Code was the editor. Training, attack ge
+P: The primary software components used in this research include:
+P: Python 3.x
+P: PyTorch
+P: Torchvision
+P: Matplotlib
+P: NumPy
+P: Scikit-learn
+P: Dataset Configuration
+P: CIFAR-10 downloaded automatically through Torchvision into the local cache—50k train and 10k test images across the ten 
+P: Tensors were normalized before the forward pass.
+P: CNN Training Configuration
+P: Baseline hyperparameters:
+P: TABLE I
+BASELINE CNN TRAINING CONFIGURATION
+TBL: Parameter | Value / Optimizer | Adam
+P: After ten epochs the held-out 10k images were classified with 72.54% accuracy.
+P: FGSM Attack Configuration
+P: FGSM attacks were executed at inference time on saved weights; parameters were not updated during the attack pass.
+P: Epsilon values tested:
+P: 0.01, 0.03, 0.05, 0.10
+P: Lower epsilons mimic subtle tampering; 0.10 adds stronger noise within the range used here.
+P: The robust checkpoint was produced by mixing FGSM batches into ordinary training steps.
+P: Robust training settings:
+P: TABLE II
+ADVERSARIAL TRAINING CONFIGURATION
+TBL: Parameter | Value / Adversarial Attack | FGSM
+P: Both checkpoints were evaluated on the same 10k test tensors and the same four epsilon settings so the comparison stayed
+P: Generated Artifacts
+P: Files written during the run:
+P: Epoch Accuracy Graph
+P: FGSM Accuracy Comparison Graph
+P: Multi-Epsilon Robustness Graph
+P: Adversarial Example Visualization
+P: Robust Adversarial Example Visualization
+P: Confusion Matrix
+P: Those plots and matrices were opened while writing the report to cross-check the console accuracy prints.
+P: Results and Discussion
+P: Baseline CNN Performance
+P: Training finished without divergence. I then scored the baseline on untouched test images before touching the attack cod
+P: The model achieved a test accuracy of 72.54%.
+P: Figure 1. Training Accuracy of CNN Across Training Epochs
+P: The epoch curve in Figure 1 climbed steadily, so the 72.54% clean score was used as the reference point for every FGSM r
+P: Impact of FGSM Adversarial Attacks
+P: FGSM was applied next at each listed epsilon. Accuracy was recomputed on the full test loader after perturbation.
+P: TABLE III
+BASELINE CNN ACCURACY UNDER FGSM ATTACK
+TBL: Epsilon | Accuracy(%) / 0.01 | 23.13
+P: Testing results revealed a steep drop as epsilon increased. At 0.03 the score moved from 72.54% down to 7.34%, which is 
+P: Adversarial Example Analysis
+P: Saved PNG pairs showed almost no visible gap between clean and adversarial frames, yet argmax labels often changed.
+P: In one experimental example:
+P: Original Prediction = 3
+P: Adversarial Prediction = 5
+P: Figure 4. Successful FGSM Attack Causing Prediction Change
+P: Figure 5. Robust CNN Preserving Prediction Under FGSM Attack
+P: The standard checkpoint flipped labels on many perturbed inputs. The retrained checkpoint kept the original class on the
+P: That pattern repeated across several manually inspected indices: small pixel edits, large logit swings on the baseline, 
+P: Adversarial Training Performance
+P: After the robust training loop, clean test accuracy settled at:
+P: 65.15%
+P: 65.15% sits about seven points under the baseline 72.54%, but attacked scores improved across every epsilon I logged.
+P: Trading a slice of clean accuracy for higher FGSM scores matched what Madry et al. report for perturbed-batch training.
+P: Robustness Evaluation of the Adversarial Trained Model
+P: TABLE IV
+ROBUST MODEL ACCURACY UNDER FGSM ATTACK
+TBL: Epsilon | Robust Accuracy (%) / 0.01 | 49.87
+P: Figure 6. FGSM Accuracy Comparison Between Standard CNN and Adversarial Trained CNN.
+P: Under attack the robust checkpoint held more correct labels at every epsilon in the tables.
+P: At ε = 0.03, baseline CNN accuracy was 7.34%.
+P: Robust CNN at ε = 0.03 → 28.38%
+P: At ε = 0.03 the gap was 7.34% versus 28.38% with identical code paths and data.
+P: TABLE V
+COMPARISON BETWEEN STANDARD AND ROBUST MODELS
+TBL: Metric | Standard CNN | Robust CNN / Clean Accuracy | 72.54% | 65.15%
+P: Comparison Between Standard and Robust Models
+P: Clean accuracy dropped from 72.54% to 65.15%, yet FGSM accuracy at 0.03 rose from 7.34% to 28.38%. The trade-off showed 
+P: Confusion Matrix Analysis
+P: A confusion matrix was exported from sklearn on baseline predictions.
+P: Cat versus dog and automobile versus truck carried the heaviest off-diagonal counts at 32×32 resolution, which matches h
+P: Errors were grouped by visual similarity rather than spread evenly across all ten labels.
+P: Figure 7. Confusion Matrix of CNN Classification Results
+P: Discussion
+P: The baseline CNN handled normal CIFAR-10 frames well—72.54% on the test split—but the same file on disk failed once FGSM
+P: During implementation the attack loop was only a few lines: backward on the input, take signs, scale by epsilon, clamp t
+P: These runs do not cover PGD, deeper nets, or production traffic. They do show that a competent clean score can hide brit
+P: Limitations of the Study
+P: Scope stayed narrow: one shallow CNN, CIFAR-10 only, FGSM only. PGD or DeepFool may punch through the same defense. Larg
+P: Conclusion
+P: I trained a CIFAR-10 CNN, attacked it with FGSM at four epsilon values, and retrained with perturbed batches in the loop
+P: Plots, matrix counts, and saved image pairs all told the same story: the first checkpoint looked healthy on clean data y
+P: 8. Future Work
+P: FGSM-only defense helped in these runs, but the codebase could be extended in several ways.
+P: Port the same evaluation harness to PGD, DeepFool, and Carlini–Wagner attacks and log how the robust checkpoint responds
+P: Try certified defenses or robust loss variants and compare training time against plain adversarial batches.
+P: Repeat the pipeline on ResNet or VGG backbones with identical epsilon tables.
+P: Move beyond CIFAR-10 to a higher-resolution set and check whether the accuracy gap widens.
+P: Run domain-specific smoke tests in cybersecurity feeds, medical thumbnails, or autonomy datasets once compute budget all
+P: Each extension would reuse the same logging format so new runs stay comparable to the numbers reported here.
+P: 9. References
+P: I. J. Goodfellow, J. Shlens, and C. Szegedy, “Explaining and Harnessing Adversarial Examples,” International Conference 
+P: A. Krizhevsky, “Learning Multiple Layers of Features from Tiny Images,” University of Toronto, Technical Report, 2009.
+P: Y. LeCun, Y. Bengio, and G. Hinton, “Deep Learning,” Nature, vol. 521, no. 7553, pp. 436–444, 2015.
+P: N. Papernot et al., “Practical Black-Box Attacks against Machine Learning,” ACM Asia Conference on Computer and Communic
+P: A. Madry et al., “Towards Deep Learning Models Resistant to Adversarial Attacks,” International Conference on Learning R
