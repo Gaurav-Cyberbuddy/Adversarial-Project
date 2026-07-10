@@ -1,0 +1,20 @@
+# Virtual environments
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+
+# Dataset (download separately)
+dataset/cifar-10-batches-py/
+dataset/cifar-10-python.tar.gz
+
+# Temporary Office files
+~$*.docx
